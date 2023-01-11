@@ -1,0 +1,469 @@
+
+nnoremap <SPACE> <Nop>
+let g:mapleader=" "
+let g:maplocalleader=","
+set shell=/bin/sh
+lua  << EOF
+
+-- Install packer
+
+-- local use = require('packer').use
+-- require('packer').startup(function()
+--  use 'wbthomason/packer.nvim' -- Package manager
+--  use 'tpope/vim-fugitive' -- Git commands in nvim
+--  use 'tpope/vim-rhubarb' -- Fugitive-companion to interact with github
+--  use 'tpope/vim-commentary' -- "gc" to comment visual regions/lines
+--  use 'ludovicchabant/vim-gutentags' -- Automatic tags management
+--  -- UI to select things (files, grep results, open buffers...)
+--  use { 'nvim-telescope/telescope.nvim', requires = { 'nvim-lua/plenary.nvim' } }
+--  use 'joshdick/onedark.vim' -- Theme inspired by Atom
+--  use 'itchyny/lightline.vim' -- Fancier statusline
+  -- Add indentation guides even on blank lines
+--  use 'lukas-reineke/indent-blankline.nvim'
+--  -- Add git related info in the signs columns and popups
+--  use { 'lewis6991/gitsigns.nvim', requires = { 'nvim-lua/plenary.nvim' } }
+--  -- Highlight, edit, and navigate code using a fast incremental parsing library
+--  use 'nvim-lua/plenary.nvim'
+--  use 'nvim-treesitter/nvim-treesitter'
+--  use {'nvim-neorg/neorg', after='nvim-treesitter', unstable = true}
+--  -- Additional textobjects for treesitter
+--  use 'nvim-treesitter/nvim-treesitter-textobjects'
+--  use 'neovim/nvim-lspconfig' -- Collection of configurations for built-in LSP client
+--  use 'hrsh7th/nvim-cmp' -- Autocompletion plugin
+--  use 'hrsh7th/cmp-nvim-lsp'
+--  use 'saadparwaiz1/cmp_luasnip'
+--  use 'L3MON4D3/LuaSnip' -- Snippets plugin
+--  end)
+
+vim.o.expandtab = true
+-- for nvim-metals
+vim.opt_global.shortmess:remove("F")
+
+--Incremental live completion (note: this is now a default on master)
+vim.o.inccommand = 'nosplit'
+
+--Set highlight on search
+vim.o.hlsearch = false
+
+--Make line numbers default
+vim.wo.number = true
+
+--Do not save when switching buffers (note: this is now a default on master)
+vim.o.hidden = true
+--Enable mouse mode
+vim.o.mouse = 'a'
+
+--Enable break indent
+vim.o.breakindent = true
+
+--Save undo history
+vim.opt.undofile = true
+
+--Case insensitive searching UNLESS /C or capital in search
+vim.o.ignorecase = true
+vim.o.smartcase = true
+
+--Enable break indent
+vim.o.breakindent = true
+
+--Save undo history
+vim.opt.undofile = true
+
+--Case insensitive searching UNLESS /C or capital in search
+vim.o.ignorecase = true
+vim.o.smartcase = true
+
+--Decrease update time
+vim.o.updatetime = 250
+vim.wo.signcolumn = 'yes'
+
+--Set colorscheme (order is important here)
+vim.o.termguicolors = true
+--vim.opt.guifont = { "Source Code Pro", "h8" }
+vim.opt.guifont = {"hack:h8:w8"}
+vim.g.onedark_terminal_italics = 2
+vim.cmd [[colorscheme onedark]]
+
+
+--Set statusbar
+vim.g.lightline = {
+  colorscheme = 'onedark',
+  active = { left = { { 'mode', 'paste' }, { 'gitbranch', 'readonly', 'filename', 'modified' } } },
+  component_function = { gitbranch = 'fugitive#head' },
+}
+
+--Remap space as leader key
+--vim.api.nvim_set_keymap('', '<Space>', '<Nop>', { noremap = true, silent = true })
+--vim.g.mapleader = ' '
+--vim.g.maplocalleader = ' '
+
+--Remap for dealing with word wrap
+vim.api.nvim_set_keymap('n', 'k', "v:count == 0 ? 'gk' : 'k'", { noremap = true, expr = true, silent = true })
+vim.api.nvim_set_keymap('n', 'j', "v:count == 0 ? 'gj' : 'j'", { noremap = true, expr = true, silent = true })
+
+-- Highlight on yank
+vim.api.nvim_exec(
+  [[
+  augroup YankHighlight
+    autocmd!
+    autocmd TextYankPost * silent! lua vim.highlight.on_yank()
+  augroup end
+]],
+  false
+)
+
+-- Y yank until the end of line  (note: this is now a default on master)
+vim.api.nvim_set_keymap('n', 'Y', 'y$', { noremap = true })
+
+--Map blankline
+vim.g.indent_blankline_char = '┊'
+vim.g.indent_blankline_filetype_exclude = { 'help', 'packer' }
+vim.g.indent_blankline_buftype_exclude = { 'terminal', 'nofile' }
+vim.g.indent_blankline_char_highlight = 'LineNr'
+vim.g.indent_blankline_show_trailing_blankline_indent = false
+
+-- neorg
+local parser_configs = require('nvim-treesitter.parsers').get_parser_configs()
+parser_configs.norg = {
+    install_info = {
+        url = "https://github.com/nvim-neorg/tree-sitter-norg",
+        files = { "src/parser.c", "src/scanner.cc" },
+        branch = "main"
+    },
+}
+
+parser_configs.norg_meta = {
+    install_info = {
+        url = "https://github.com/nvim-neorg/tree-sitter-norg-meta",
+        files = { "src/parser.c" },
+        branch = "main"
+    },
+}
+
+parser_configs.norg_table = {
+    install_info = {
+        url = "https://github.com/nvim-neorg/tree-sitter-norg-table",
+        files = { "src/parser.c" },
+        branch = "main"
+    },
+}
+
+
+require('neorg').setup {
+    -- Tell Neorg what modules to load
+    load = {
+        ["core.defaults"] = {}, -- Load all the default modules
+        ["core.norg.concealer"] = {}, -- Allows for use of icons
+        ["core.norg.dirman"] = { -- Manage your directories with Neorg
+            config = {
+                workspaces = {
+                    my_workspace = "~/neorg";
+                    gtd = "~/gtd";
+		    writing = "~/Documents/writing";
+                }
+            }
+        },
+	["core.norg.completion"] = {
+	    config = {
+		engine = "nvim-cmp"  -- We current support nvim-compe and nvim-cmp only
+	    }
+	},
+	["core.keybinds"] = {
+		config = {
+			default_keybinds = true; 
+			--neorg_leader = "<Leader>"; 
+			}
+	},
+
+    	["core.gtd.base"] = {
+		config = {
+			workspace = "gtd";
+			default_lists = {inbox="inbox.norg"};
+			},
+		},
+	["core.integrations.telescope"] = {
+	},
+	["core.norg.qol.toc"] = {},
+	["core.norg.journal"] = {
+		config = {
+			workspace = "writing"
+			},
+	}
+    }
+}
+
+
+require('nvim-treesitter.configs').setup {
+ensure_installed = {"norg", "haskell", "cpp", "python"}, -- one of "all", "maintained" (parsers with maintainers), or a list of languages
+  highlight = {
+    enable = true,              -- false will disable the whole extension
+    disable = {"nix"}
+  },
+}
+
+require("null-ls").setup{
+	sources = { require("null-ls").builtins.diagnostics.mypy },
+ }
+
+
+require('rust-tools').setup({})
+
+  -- Setup nvim-cmp.
+  local cmp = require'cmp'
+
+  cmp.setup({
+    snippet = {
+      -- REQUIRED - you must specify a snippet engine
+      expand = function(args)
+        --vim.fn["vsnip#anonymous"](args.body) -- For `vsnip` users.
+         --require('luasnip').lsp_expand(args.body) -- For `luasnip` users.
+        -- require('snippy').expand_snippet(args.body) -- For `snippy` users.
+         vim.fn["UltiSnips#Anon"](args.body) -- For `ultisnips` users.
+      end,
+    },
+    mapping = {
+      ['<C-b>'] = cmp.mapping(cmp.mapping.scroll_docs(-4), { 'i', 'c' }),
+      ['<C-f>'] = cmp.mapping(cmp.mapping.scroll_docs(4), { 'i', 'c' }),
+      ['<C-Space>'] = cmp.mapping(cmp.mapping.complete(), { 'i', 'c' }),
+      ['<C-y>'] = cmp.config.disable, -- Specify `cmp.config.disable` if you want to remove the default `<C-y>` mapping.
+      ['<C-e>'] = cmp.mapping({
+        i = cmp.mapping.abort(),
+        c = cmp.mapping.close(),
+      }),
+      ['<CR>'] = cmp.mapping.confirm({ select = true }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
+    },
+    sources = cmp.config.sources({
+      { name = 'nvim_lsp' },
+      --{ name = 'vsnip' }, -- For vsnip users.
+      --{ name = 'luasnip' }, -- For luasnip users.
+      { name = 'ultisnips' }, -- For ultisnips users.
+      -- { name = 'snippy' }, -- For snippy users.
+    }, {
+      { name = 'buffer' },
+    })
+  })
+
+-- Gitsigns
+--require('gitsigns').setup {
+--  signs = {
+--    add = { hl = 'GitGutterAdd', text = '+' },
+--    change = { hl = 'GitGutterChange', text = '~' },
+--    delete = { hl = 'GitGutterDelete', text = '_' },
+--    topdelete = { hl = 'GitGutterDelete', text = '‾' },
+--    changedelete = { hl = 'GitGutterChange', text = '~' },
+--  },
+--}
+
+-- Telescope
+require('telescope').setup {
+  defaults = {
+    mappings = {
+      i = {
+        ['<C-u>'] = false,
+        ['<C-d>'] = false,
+      },
+    },
+  },
+}
+--Add leader shortcuts
+vim.api.nvim_set_keymap('n', '<leader><space>', [[<cmd>lua require('telescope.builtin').buffers()<CR>]], { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<leader>sf', [[<cmd>lua require('telescope.builtin').find_files({previewer = false})<CR>]], { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<leader>sb', [[<cmd>lua require('telescope.builtin').current_buffer_fuzzy_find()<CR>]], { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<leader>sh', [[<cmd>lua require('telescope.builtin').help_tags()<CR>]], { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<leader>st', [[<cmd>lua require('telescope.builtin').tags()<CR>]], { noremap = true, silent = true }) vim.api.nvim_set_keymap('n', '<leader>sd', [[<cmd>lua require('telescope.builtin').grep_string()<CR>]], { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<leader>sp', [[<cmd>lua require('telescope.builtin').live_grep()<CR>]], { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<leader>so', [[<cmd>lua require('telescope.builtin').tags{ only_current_buffer = true }<CR>]], { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<leader>?', [[<cmd>lua require('telescope.builtin').oldfiles()<CR>]], { noremap = true, silent = true })
+
+
+-- LSP settings
+local nvim_lsp = require 'lspconfig'
+
+local on_attach = function(_, bufnr)
+  vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
+
+  local opts = { noremap = true, silent = true }
+  vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gD', '<cmd>lua vim.lsp.buf.declaration()<CR>', opts)
+  vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gd', '<cmd>lua vim.lsp.buf.definition()<CR>', opts)
+  vim.api.nvim_buf_set_keymap(bufnr, 'n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>', opts)
+  vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gi', '<cmd>lua vim.lsp.buf.implementation()<CR>', opts)
+  vim.api.nvim_buf_set_keymap(bufnr, 'n', '<C-k>', '<cmd>lua vim.lsp.buf.signature_help()<CR>', opts)
+  vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>wa', '<cmd>lua vim.lsp.buf.add_workspace_folder()<CR>', opts)
+  vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>wr', '<cmd>lua vim.lsp.buf.remove_workspace_folder()<CR>', opts)
+  vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>wl', '<cmd>lua print(vim.inspect(vim.lsp.buf.list_workspace_folders()))<CR>', opts)
+  vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>D', '<cmd>lua vim.lsp.buf.type_definition()<CR>', opts)
+  vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>rn', '<cmd>lua vim.lsp.buf.rename()<CR>', opts)
+  vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>', opts)
+  vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>ca', '<cmd>lua vim.lsp.buf.code_action()<CR>', opts)
+  vim.api.nvim_buf_set_keymap(bufnr, 'v', '<leader>ca', '<cmd>lua vim.lsp.buf.range_code_action()<CR>', opts)
+  vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>e', '<cmd>lua vim.lsp.diagnostic.show_line_diagnostics()<CR>', opts)
+  vim.api.nvim_buf_set_keymap(bufnr, 'n', '[d', '<cmd>lua vim.lsp.diagnostic.goto_prev()<CR>', opts)
+  vim.api.nvim_buf_set_keymap(bufnr, 'n', ']d', '<cmd>lua vim.lsp.diagnostic.goto_next()<CR>', opts)
+  vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>q', '<cmd>lua vim.lsp.diagnostic.set_loclist()<CR>', opts)
+  vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>so', [[<cmd>lua require('telescope.builtin').lsp_document_symbols()<CR>]], opts)
+  vim.cmd [[ command! Format execute 'lua vim.lsp.buf.formatting()' ]]
+end
+
+--nvim-cmp supports additional completion capabilities
+local capabilities = vim.lsp.protocol.make_client_capabilities()
+capabilities = require('cmp_nvim_lsp').update_capabilities(capabilities)
+
+-- Enable the following language servers
+local servers = { 'clangd', 'rust_analyzer', 'tsserver', 'hls', 'dartls'}
+--'pyright'
+for _, lsp in ipairs(servers) do
+  nvim_lsp[lsp].setup {
+    on_attach = on_attach,
+    capabilities = capabilities,
+  }
+end
+
+-- Example custom server
+local sumneko_root_path = vim.fn.getenv 'HOME' .. '/.local/bin/sumneko_lua' -- Change to your sumneko root installation
+local sumneko_binary = sumneko_root_path .. '/bin/linux/lua-language-server'
+
+-- Make runtime files discoverable to the server
+local runtime_path = vim.split(package.path, ';')
+table.insert(runtime_path, 'lua/?.lua')
+table.insert(runtime_path, 'lua/?/init.lua')
+
+require('lspconfig').sumneko_lua.setup {
+  cmd = { sumneko_binary, '-E', sumneko_root_path .. '/main.lua' },
+  on_attach = on_attach,
+  capabilities = capabilities,
+  settings = {
+    Lua = {
+      runtime = {
+        -- Tell the language server which version of Lua you're using (most likely LuaJIT in the case of Neovim)
+        version = 'LuaJIT',
+        -- Setup your lua path
+        path = runtime_path,
+      },
+      diagnostics = {
+        -- Get the language server to recognize the `vim` global
+        globals = { 'vim' },
+      },
+      workspace = {
+        -- Make the server aware of Neovim runtime files
+        library = vim.api.nvim_get_runtime_file('', true),
+      },
+      -- Do not send telemetry data containing a randomized but unique identifier
+      telemetry = {
+        enable = false,
+      },
+    },
+  },
+}
+
+
+----------------------------------
+-- LSP Setup ---------------------
+----------------------------------
+local metals_config = require("metals").bare_config()
+
+-- Example of settings
+metals_config.settings = {
+  showImplicitArguments = true,
+  excludedPackages = { "akka.actor.typed.javadsl", "com.github.swagger.akka.javadsl" },
+}
+
+-- *READ THIS*
+-- I *highly* recommend setting statusBarProvider to true, however if you do,
+-- you *have* to have a setting to display this in your statusline or else
+-- you'll not see any messages from metals. There is more info in the help
+-- docs about this
+--metals_config.init_options.statusBarProvider = "on"
+
+-- Example if you are using cmp how to make sure the correct capabilities for snippets are set
+local capabilities = vim.lsp.protocol.make_client_capabilities()
+metals_config.capabilities = require("cmp_nvim_lsp").update_capabilities(capabilities)
+
+-- Debug settings if you're using nvim-dap
+local dap = require("dap")
+
+dap.configurations.scala = {
+  {
+    type = "scala",
+    request = "launch",
+    name = "RunOrTest",
+    metals = {
+      runType = "runOrTestFile",
+      --args = { "firstArg", "secondArg", "thirdArg" }, -- here just as an example
+    },
+  },
+  {
+    type = "scala",
+    request = "launch",
+    name = "Test Target",
+    metals = {
+      runType = "testTarget",
+    },
+  },
+}
+
+
+metals_config.on_attach = function(client, bufnr)
+  require("metals").setup_dap()
+end
+
+
+-- Autocmd that will actually be in charging of starting the whole thing
+local nvim_metals_group = vim.api.nvim_create_augroup("nvim-metals", { clear = true })
+vim.api.nvim_create_autocmd("FileType", {
+  -- NOTE: You may or may not want java included here. You will need it if you
+  -- want basic Java support but it may also conflict if you are using
+  -- something like nvim-jdtls which also works on a java filetype autocmd.
+  pattern = { "scala", "sbt", "java" },
+  callback = function()
+    require("metals").initialize_or_attach(metals_config)
+  end,
+  group = nvim_metals_group,
+})
+
+--require("flutter-tools").setup{}
+
+require('telescope').load_extension("opener")
+vim.api.nvim_set_keymap("n", "<leader>o", ":Telescope opener<cr>", { noremap = true, silent = true })
+
+--    expand = function(args)
+--      require('luasnip').lsp_expand(args.body)
+--    end,
+--  },
+--  mapping = {
+--    ['<C-p>'] = cmp.mapping.select_prev_item(),
+--    ['<C-n>'] = cmp.mapping.select_next_item(),
+--    ['<C-d>'] = cmp.mapping.scroll_docs(-4),
+--    ['<C-f>'] = cmp.mapping.scroll_docs(4),
+--    ['<C-Space>'] = cmp.mapping.complete(),
+--    ['<C-e>'] = cmp.mapping.close(),
+--    ['<CR>'] = cmp.mapping.confirm {
+
+--      behavior = cmp.ConfirmBehavior.Replace,
+--      select = true,
+--    },
+--    ['<Tab>'] = function(fallback)
+--      if cmp.visible() then
+--        cmp.select_next_item()
+--      elseif luasnip.expand_or_jumpable() then
+--        luasnip.expand_or_jump()
+--      else
+--        fallback()
+--      end
+--    end,
+--    ['<S-Tab>'] = function(fallback)
+--      if cmp.visible() then
+--        cmp.select_prev_item()
+--      elseif luasnip.jumpable(-1) then
+--        luasnip.jump(-1)
+--      else
+--        fallback()
+--      end
+--    end,
+--  },
+--  sources = {
+--    { name = 'nvim_lsp' },
+--    { name = 'luasnip' },
+--  },
+--}
+
+EOF
