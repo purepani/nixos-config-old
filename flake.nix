@@ -1,5 +1,5 @@
 {
-  description = "Home Manager configuration of Jane Doe";
+  description = "Home Manager configuration of Satwik";
 
   inputs = {
     # Specify the source of Home Manager and Nixpkgs.
@@ -8,24 +8,31 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    neovim-flake.url = "github:jordanisaacs/neovim-flake";
   };
 
-  outputs = { nixpkgs, home-manager, ... }:
-    let
-      system = "x86_64-linux";
-      pkgs = nixpkgs.legacyPackages.${system};
-    in {
-      homeConfigurations.satwik = home-manager.lib.homeManagerConfiguration {
-        inherit pkgs;
-
-        # Specify your home configuration modules here, for example,
-        # the path to your home.nix.
-        modules = [
-          ./home.nix
-        ];
-
-        # Optionally use extraSpecialArgs
-        # to pass through arguments to home.nix
-      };
+  outputs = {
+    nixpkgs,
+    home-manager,
+    ...
+  } @ attrs: let
+    system = "x86_64-linux";
+    pkgs = import nixpkgs {
+      inherit system;
+      config.allowUnfree = true;
     };
+  in {
+    homeConfigurations.satwik = home-manager.lib.homeManagerConfiguration {
+      inherit pkgs;
+
+      # Specify your home configuration modules here, for example,
+      # the path to your home.nix.
+      modules = [
+        ./home.nix
+      ];
+      extraSpecialArgs = attrs;
+      # Optionally use extraSpecialArgs
+      # to pass through arguments to home.nix
+    };
+  };
 }
