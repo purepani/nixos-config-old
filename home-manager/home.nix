@@ -147,71 +147,25 @@ in {
   };
   home.packages = with pkgs;
     [
-      jre8
-      gnome.zenity
       openssl
-      wineWowPackages.stable
-      #wine
-      inkscape
-      bluez
-      libreoffice
-      #lutris
-      openjdk8
-      #minecraft
-      anki
-      zotero
       ranger
       arduino
-      blender
-      #kdeconnect
-      dunst
-      spectacle
-      imagemagick
-      taskwarrior
-      lmms
-      lilypond
-      #vlc
-      #mpv
-      #reaper
-      frescobaldi
-      musescore
-      xclip
-      #cura
-      #prusa-slicer
-      slic3r
-      pavucontrol
-      okular
-      godot
       linuxConsoleTools
-      #python3
       rust-analyzer
       graphviz
       bash
-      discord
       gcc
-      #nerdfonts
-      zoom
-      #freecad
-      #librecad
-      #mupen64plus
-      zoom
-      #dotnet-runtime
-      virt-manager
-      #emacs
+      nerdfonts
       restic
       ledger
       neovide
       audacity
-      kicad
       kgpg
       fd
       rclone
-      chromium
-      appimage-run
       unzip
     ]
     ++ [customNeovim.neovim]
-    ++ [pkgs.prismlauncher];
   #programs.neovim = customNeovim.neovim;
   #programs.neovim.enable = true;
   #services.syncthing.enable = true;
